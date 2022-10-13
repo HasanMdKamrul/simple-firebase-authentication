@@ -1,4 +1,4 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getAuth, GithubAuthProvider, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { useState } from 'react';
 import './App.css';
 import app from './firebase/firebase.init';
@@ -15,7 +15,9 @@ const auth = getAuth(app);
 function App() {
   // ** Use google googleAuthentication as your third-party authentication procedure
   
-  const provider = new GoogleAuthProvider();
+  const googleProvider = new GoogleAuthProvider();
+
+  const githubProvider = new GithubAuthProvider();
 
   const [user,setUser] = useState({})
 
@@ -24,7 +26,7 @@ function App() {
   const authHandler = ()=>{
     const authentication = async ()=>{
       try {
-        const result = await signInWithPopup(auth,provider);
+        const result = await signInWithPopup(auth,googleProvider);
         setUser(result.user);
       } catch (error) {
         console.error('Error:', error);
@@ -34,11 +36,23 @@ function App() {
     authentication();
   };
 
+  const githubHandler = ()=>{
+    const handleGithub = async ()=>{
+      try {
+        const result = await signInWithPopup(auth,githubProvider);
+        setUser(result.user);
+      } catch (error) {
+        console.error('error: ' , error);
+      }
+    }
+    handleGithub()
+  }
+
   const signOutHandler = ()=>{
     
     const signoutInfo = async ()=> {
       try {
-        const signout = await signOut(auth);
+        await signOut(auth);
         setUser({});
       } catch (error) {
         console.log(error);
@@ -51,18 +65,20 @@ function App() {
   }
 
 
-  const {displayName,photoURL,email} = user;
+  const {displayName,photoURL,email,uid} = user;
   
   return (
     <div className="App">
       <h1>Auth</h1>
       {
-        email ? <div>
+        uid ? <div>
           <p>{displayName}</p>
       <img src={photoURL} alt="" />
       <p>Email: {email}</p>
       <button onClick={()=>signOutHandler()}>Google Sign-out</button>
-        </div> : <button onClick={()=>authHandler()}>Google Sign-in</button>
+        </div> : <><button onClick={()=>authHandler()}>Google Sign-in</button>
+        <button onClick={()=>githubHandler()}>Github Sign-in</button>
+        </>
       }
      
      
