@@ -1,4 +1,5 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { useState } from 'react';
 import './App.css';
 import app from './firebase/firebase.init';
 
@@ -16,23 +17,55 @@ function App() {
   
   const provider = new GoogleAuthProvider();
 
+  const [user,setUser] = useState({})
+
+
+// ** Why we don't use useEffect here -> bcz useEffect eikhane amra button use kortesi tai useEffect r use kori nai
   const authHandler = ()=>{
     const authentication = async ()=>{
       try {
         const result = await signInWithPopup(auth,provider);
-        console.log(result.user);
+        setUser(result.user);
       } catch (error) {
         console.error('Error:', error);
       }
     };
 
     authentication();
+  };
+
+  const signOutHandler = ()=>{
+    
+    const signoutInfo = async ()=> {
+      try {
+        const signout = await signOut(auth);
+        setUser({});
+      } catch (error) {
+        console.log(error);
+        setUser({})
+      }
+    };
+
+    signoutInfo()
+
   }
+
+
+  const {displayName,photoURL,email} = user;
   
   return (
     <div className="App">
       <h1>Auth</h1>
-     <button onClick={()=>authHandler()}>Google Sign-in</button>
+      {
+        email ? <div>
+          <p>{displayName}</p>
+      <img src={photoURL} alt="" />
+      <p>Email: {email}</p>
+      <button onClick={()=>signOutHandler()}>Google Sign-out</button>
+        </div> : <button onClick={()=>authHandler()}>Google Sign-in</button>
+      }
+     
+     
     </div>
   );
 }
